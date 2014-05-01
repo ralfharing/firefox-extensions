@@ -6,49 +6,49 @@
   "author": "Ralf Haring",
   "version": "1.3.9",
   "preferences": [{
-        "name": "album",
+        "name": "show_albums",
         "type": "bool",
         "title": "Show Albums",
         "value": true
     },
     {
-        "name": "playlist",
+        "name": "show_playlists",
         "type": "bool",
         "title": "Show Playlists",
         "value": true
     },
     {
-        "name": "instant_mix_user",
+        "name": "show_instant_mixes_user",
         "type": "bool",
         "title": "Show Instant Mixes (User)",
         "value": true
     },
     {
-        "name": "instant_mix_auto",
+        "name": "show_instant_mixes_auto",
         "type": "bool",
         "title": "Show Instant Mixes (Auto)",
         "value": false
     },
     {
-        "name": "im_feeling_lucky",
+        "name": "show_im_feeling_lucky",
         "type": "bool",
         "title": "Show I'm Feeling Lucky",
         "value": true
     },
     {
-        "name": "suggested_album",
+        "name": "show_suggested_albums",
         "type": "bool",
         "title": "Show Suggested Albums",
         "value": false
     },
     {
-        "name": "suggested_artist",
+        "name": "show_suggested_artists",
         "type": "bool",
         "title": "Show Suggested Artists",
         "value": false
     },
     {
-        "name": "suggested_genre",
+        "name": "show_suggested_genres",
         "type": "bool",
         "title": "Show Suggested Genres",
         "value": false

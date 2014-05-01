@@ -5,7 +5,7 @@
 var prefs = {};
 
 // receive prefs from firefox and store them
-self.port.on("firefox_change_prefs", function(new_prefs){
+self.port.on('firefox_change_prefs', function(new_prefs){
     prefs = new_prefs;
 });
 
@@ -17,11 +17,11 @@ var str = {
     //album : 'div[data-type="album"]',
     album : 'div[data-type="album"]:not(:contains("Suggested new release"))',
     playlist : 'div[data-type="pl"]',
+    instant_mix_user : 'div[data-type="st"]',
+    instant_mix_auto : 'div[data-type="im"]',
+    im_feeling_lucky : 'div[data-type="imfl"]',
     //suggested_album : 'div[data-type="sal"]',
     suggested_album : 'div[data-type]:contains("Suggested new release")',
-    instant_mix_auto : 'div[data-type="im"]',
-    instant_mix_user : 'div[data-type="st"]',
-    im_feeling_lucky : 'div[data-type="imfl"]',
     suggested_artist : 'div[data-is-radio][data-type="artist"]',
     suggested_genre : 'div[data-type="expgenres"]',
     small_card_group : 'div.card-group.small:first',
@@ -37,41 +37,41 @@ var str = {
 var add_listeners = function(){
     $('#clean-up :checkbox').change(function(){
         switch(this.id){
-            case 'show-playlists':
-                prefs.playlist = this.checked;
-                self.port.emit("gmusic_change_prefs", {'playlist' : this.checked});
+            case 'show_albums':
+                prefs.show_albums = this.checked;
+                self.port.emit('gmusic_change_prefs', {'show_albums' : this.checked});
                 break;
-            case 'show-instant-mixes-auto':
-                prefs.instant_mix_auto = this.checked;
-                self.port.emit("gmusic_change_prefs", {'instant_mix_auto' : this.checked});
+            case 'show_playlists':
+                prefs.show_playlists = this.checked;
+                self.port.emit('gmusic_change_prefs', {'show_playlists' : this.checked});
                 break;
-            case 'show-instant-mixes-user':
-                prefs.instant_mix_user = this.checked;
-                self.port.emit("gmusic_change_prefs", {'instant_mix_user' : this.checked});
+            case 'show_instant_mixes_user':
+                prefs.show_instant_mixes_user = this.checked;
+                self.port.emit('gmusic_change_prefs', {'show_instant_mixes_user' : this.checked});
                 break;
-            case 'show-suggested-albums':
-                prefs.suggested_album = this.checked;
-                self.port.emit("gmusic_change_prefs", {'suggested_album' : this.checked});
+            case 'show_instant_mixes_auto':
+                prefs.show_instant_mixes_auto = this.checked;
+                self.port.emit('gmusic_change_prefs', {'show_instant_mixes_auto' : this.checked});
                 break;
-            case 'show-albums':
-                prefs.album = this.checked;
-                self.port.emit("gmusic_change_prefs", {'album' : this.checked});
+            case 'show_im_feeling_lucky':
+                prefs.show_im_feeling_lucky = this.checked;
+                self.port.emit('gmusic_change_prefs', {'show_im_feeling_lucky' : this.checked});
                 break;
-            case 'show-im-feeling-lucky':
-                prefs.im_feeling_lucky = this.checked;
-                self.port.emit("gmusic_change_prefs", {'im_feeling_lucky' : this.checked});
+            case 'show_suggested_albums':
+                prefs.show_suggested_albums = this.checked;
+                self.port.emit('gmusic_change_prefs', {'show_suggested_albums' : this.checked});
                 break;
-            case 'resize-cards':
+            case 'show_suggested_artists':
+                prefs.show_suggested_artists = this.checked;
+                self.port.emit('gmusic_change_prefs', {'show_suggested_artists' : this.checked});
+                break;
+            case 'show_suggested_genres':
+                prefs.show_suggested_genres = this.checked;
+                self.port.emit('gmusic_change_prefs', {'show_suggested_genres' : this.checked});
+                break;
+            case 'resize_cards':
                 prefs.resize_cards = this.checked;
-                self.port.emit("gmusic_change_prefs", {'resize_cards' : this.checked});
-                break;
-            case 'show-suggested-artists':
-                prefs.suggested_artist = this.checked;
-                self.port.emit("gmusic_change_prefs", {'suggested_artist' : this.checked});
-                break;
-            case 'show-suggested-genres':
-                prefs.suggested_genre = this.checked;
-                self.port.emit("gmusic_change_prefs", {'suggested_genre' : this.checked});
+                self.port.emit('gmusic_change_prefs', {'resize_cards' : this.checked});
                 break;
         }
     });
@@ -86,28 +86,28 @@ var remove_mixes = function(){
         $(str.card).removeClass('large').addClass('small');
 
         // remove those items the user has unchecked
-        if(prefs.album == false){
+        if(prefs.show_albums == false){
             $(str.album).remove();
         }
-        if(prefs.playlist == false){
+        if(prefs.show_playlists == false){
             $(str.playlist).remove();
         }
-        if(prefs.instant_mix_auto == false){
-            $(str.instant_mix_auto).remove();
-        }
-        if(prefs.instant_mix_user == false){
+        if(prefs.show_instant_mixes_user == false){
             $(str.instant_mix_user).remove();
         }
-        if(prefs.suggested_album == false){
-            $(str.suggested_album).remove();
+        if(prefs.show_instant_mixes_auto == false){
+            $(str.instant_mix_auto).remove();
         }
-        if(prefs.im_feeling_lucky == false){
+        if(prefs.show_im_feeling_lucky == false){
             $(str.im_feeling_lucky).remove();
         }
-        if(prefs.suggested_artist == false){
+        if(prefs.show_suggested_albums == false){
+            $(str.suggested_album).remove();
+        }
+        if(prefs.show_suggested_artists == false){
             $(str.suggested_artist).remove();
         }
-        if(prefs.suggested_genre == false){
+        if(prefs.show_suggested_genres == false){
             $(str.suggested_genre).remove();
         }
 
@@ -122,7 +122,7 @@ var remove_mixes = function(){
         $(str.content_pane).empty();
 
         // deal with the I'm Feeling Lucky container as a one-off first
-        if(prefs.im_feeling_lucky == true){
+        if(prefs.show_im_feeling_lucky == true){
             // pop off the relevant objects
             var imfl_group = card_groups.shift();
             var imfl_card = cards.shift();
@@ -172,27 +172,40 @@ var remove_mixes = function(){
         // between the two "General" and "Manage My Devices" sections
 
         // clean up header
-        var header = '<div class="settings-cluster settings-clean-up"><div class="header"><div class="title">Clean Up [Instant Mix/Radio Station]</div></div></div>';
+        // create [<div><div><div></div></div></div>]
+        var header = $('<div>', {'class': 'settings-cluster settings-clean-up'})
+                       .append($('<div>', {'class': 'header'})
+                         .append($('<div>', {'class': 'title', text: 'Clean Up [Instant Mix/Radio Station]'})));
+
         // iterate through current settings and set checkbox defaults
-        var boxes = '<div class="settings-section-content" id="clean-up"><div class="buttons-section"><span class="settings-button-description">Check off the card types you wish to see</span><div><input id="show-albums" type="checkbox"';
-        if(prefs.album){ boxes += ' checked'; }
-        boxes += '><label for="show-albums">Albums</label><input id="show-playlists" type="checkbox"';
-        if(prefs.playlist){ boxes += ' checked'; }
-        boxes += '><label for="show-playlists">Playlists</label><input id="show-instant-mixes-user" type="checkbox"';
-        if(prefs.instant_mix_user){ boxes += ' checked'; }
-        boxes += '><label for="show-instant-mixes-user">Instant Mixes (User)</label><input id="show-instant-mixes-auto" type="checkbox"';
-        if(prefs.instant_mix_auto){ boxes += ' checked'; }
-        boxes += '><label for="show-instant-mixes-auto">Instant Mixes (Auto)</label><input id="show-im-feeling-lucky" type="checkbox"';
-        if(prefs.im_feeling_lucky){ boxes += ' checked'; }
-        boxes += '><label for="show-im-feeling-lucky">I\'m Feeling Lucky</label></div><div><input id="show-suggested-albums" type="checkbox"';
-        if(prefs.suggested_album){ boxes += ' checked'; }
-        boxes += '><label for="show-suggested-albums">Suggested Albums</label><input id="show-suggested-artists" type="checkbox"';
-        if(prefs.suggested_artist){ boxes += ' checked'; }
-        boxes += '><label for="show-suggested-artists">Suggested Artists</label><input id="show-suggested-genres" type="checkbox"';
-        if(prefs.suggested_genre){ boxes += ' checked'; }
-        boxes += '><label for="show-suggested-genres">Suggested Genres</label></div><span class="settings-button-description">Check off to force all cards to the uniform small size</span><div><input id="resize-cards" type="checkbox"';
-        if(prefs.resize_cards){ boxes += ' checked'; }
-        boxes += '><label for="resize-cards">Resize All Cards to be Small</label></div></div></div>';
+        // create [<span></span><div><input><label></label><input><label></label>
+        //         <input><label></label><input><label></label><input><label></label></div>]
+        var first_row = $('<span>', {'class': 'settings-button-description', text: 'Check off the card types you wish to see'})
+                          .add($('<div>').append($('<input>', {id: 'show_albums', type: 'checkbox', checked: prefs.show_albums})
+                            .add($('<label>', {'for': 'show_albums', text: 'Albums'}))
+                            .add($('<input>', {id: 'show_playlists', type: 'checkbox', checked: prefs.show_playlists}))
+                            .add($('<label>', {'for': 'show_playlists', text: 'Playlists'}))
+                            .add($('<input>', {id: 'show_instant_mixes_user', type: 'checkbox', checked: prefs.show_instant_mixes_user}))
+                            .add($('<label>', {'for': 'show_instant_mixes_user', text: 'Instant Mixes (User)'}))
+                            .add($('<input>', {id: 'show_instant_mixes_auto', type: 'checkbox', checked: prefs.show_instant_mixes_auto}))
+                            .add($('<label>', {'for': 'show_instant_mixes_auto', text: 'Instant Mixes (Auto)'}))
+                            .add($('<input>', {id: 'show_im_feeling_lucky', type: 'checkbox', checked: prefs.show_im_feeling_lucky}))
+                            .add($('<label>', {'for': 'show_im_feeling_lucky', text: 'I\'m Feeling Lucky'}))));
+        // create [<div><input><label></label><input><label></label><input><label></label></div>]
+        var second_row = $('<div>').append($('<input>', {id: 'show_suggested_albums', type: 'checkbox', checked: prefs.show_suggested_albums})
+                           .add($('<label>', {'for': 'show_suggested_albums', text: 'Suggested Albums'}))
+                           .add($('<input>', {id: 'show_suggested_artists', type: 'checkbox', checked: prefs.show_suggested_artists}))
+                           .add($('<label>', {'for': 'show_suggested_artists', text: 'Suggested Artists'}))
+                           .add($('<input>', {id: 'show_suggested_genres', type: 'checkbox', checked: prefs.show_suggested_genres}))
+                           .add($('<label>', {'for': 'show_suggested_genres', text: 'Suggested Genres'})));
+        // create [<span></span>, <div><input><label></label></div>]
+        var third_row = $('<span>', {'class': 'settings-button-description', text: 'Check off to force all cards to the uniform small size'})
+                          .add($('<div>').append($('<input>', {id: 'resize_cards', type: 'checkbox', checked: prefs.resize_cards})
+                            .add($('<label>', {'for': 'resize_cards', text: 'Resize All Cards to be Small'}))));
+        // create [<div><div></div></div>]
+        var boxes = $('<div>', {'class': 'settings-section-content', id: 'clean-up'})
+                      .append($('<div>', {'class': 'buttons-section'})
+                        .append([first_row, second_row, third_row]));
 
         // find "General" div and insert after
         var first_settings_section = $($(str.settings_view).children()[1]);
