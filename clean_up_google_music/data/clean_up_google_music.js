@@ -1,5 +1,5 @@
 /**
- * @author Ralf Haring 2014-04-30
+ * @author Ralf Haring 2014-05-11
  */
 
 var prefs = {};
@@ -24,6 +24,11 @@ var str = {
     suggested_album : 'div[data-type]:contains("Suggested new release")',
     suggested_artist : 'div[data-is-radio][data-type="artist"]',
     suggested_genre : 'div[data-type="expgenres"]',
+    // data-reason="12"  Free from Google
+    // data-reason="2"   Recently Added to My Library
+    // data-reason="3"   Recently played
+    // data-reason="5"   Recently created
+    free_from_google : 'div[data-reason="12"]',
     small_card_group : 'div.card-group.small:first',
     card_group : 'div.card-group',
     content_pane : 'div.g-content:last-child',
@@ -69,6 +74,10 @@ var add_listeners = function(){
                 prefs.show_suggested_genres = this.checked;
                 self.port.emit('gmusic_change_prefs', {'show_suggested_genres' : this.checked});
                 break;
+            case 'show_free_from_google':
+                prefs.show_free_from_google = this.checked;
+                self.port.emit('gmusic_change_prefs', {'show_free_from_google' : this.checked});
+                break;
             case 'resize_cards':
                 prefs.resize_cards = this.checked;
                 self.port.emit('gmusic_change_prefs', {'resize_cards' : this.checked});
@@ -106,6 +115,9 @@ var remove_mixes = function(){
         }
         if(prefs.show_suggested_artists == false){
             $(str.suggested_artist).remove();
+        }
+        if(prefs.show_free_from_google == false){
+            $(str.free_from_google).remove();
         }
         if(prefs.show_suggested_genres == false){
             $(str.suggested_genre).remove();
@@ -197,7 +209,9 @@ var remove_mixes = function(){
                            .add($('<input>', {id: 'show_suggested_artists', type: 'checkbox', checked: prefs.show_suggested_artists}))
                            .add($('<label>', {'for': 'show_suggested_artists', text: 'Suggested Artists'}))
                            .add($('<input>', {id: 'show_suggested_genres', type: 'checkbox', checked: prefs.show_suggested_genres}))
-                           .add($('<label>', {'for': 'show_suggested_genres', text: 'Suggested Genres'})));
+                           .add($('<label>', {'for': 'show_suggested_genres', text: 'Suggested Genres'}))
+                           .add($('<input>', {id: 'show_free_from_google', type: 'checkbox', checked: prefs.show_free_from_google}))
+                           .add($('<label>', {'for': 'show_free_from_google', text: 'Free from Google'})));
         // create [<span></span>, <div><input><label></label></div>]
         var third_row = $('<span>', {'class': 'settings-button-description', text: 'Check off to force all cards to the uniform small size'})
                           .add($('<div>').append($('<input>', {id: 'resize_cards', type: 'checkbox', checked: prefs.resize_cards})
