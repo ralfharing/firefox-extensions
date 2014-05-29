@@ -1,5 +1,5 @@
 /**
- * @author Ralf Haring 2014-05-11
+ * @author Ralf Haring 2014-05-29
  */
 
 var prefs = {};
@@ -32,7 +32,7 @@ var str = {
     small_card_group : 'div.card-group.small:first',
     card_group : 'div.card-group',
     content_pane : 'div.g-content:last-child',
-    listen_now : '#nav_collections li[data-type="now"]',
+    listen_now : '.nav-item-container[data-type="now"]',
     loading_screen : '#loading-progress',
     settings_view : '.settings-view',
     footer : '#settings-footer'
