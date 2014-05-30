@@ -12,22 +12,27 @@ self.port.on('firefox_change_prefs', function(new_prefs){
 // all the constants in one place
 var str = {
     card : 'div.card',
-    // hardcoding English probably breaks localized versions...
-    // still don't know if "sal" has been completely retired...
-    //album : 'div[data-type="album"]',
-    album : 'div[data-type="album"]:not(:contains("Suggested new release"))',
+    album : 'div[data-type="album"]',
     playlist : 'div[data-type="pl"]',
     instant_mix_user : 'div[data-type="st"]',
     instant_mix_auto : 'div[data-type="im"]',
     im_feeling_lucky : 'div[data-type="imfl"]',
-    //suggested_album : 'div[data-type="sal"]',
-    suggested_album : 'div[data-type]:contains("Suggested new release")',
-    suggested_artist : 'div[data-is-radio][data-type="artist"]',
-    suggested_genre : 'div[data-type="expgenres"]',
-    // data-reason="12"  Free from Google
+    // data-reason="0"   ? ""
+    // data-reason="1"   Recently purchased
     // data-reason="2"   Recently Added to My Library
     // data-reason="3"   Recently played
+    // data-reason="4"   Recently subscribed
     // data-reason="5"   Recently created
+    // data-reason="6"   Recently modified
+    // data-reason="7"   Suggested new release
+    // data-reason="8"   ? Recommended for you
+    // data-reason="9"   ? ""
+    // data-reason="10"  Identified on Sound Search
+    // data-reason="11"  Artist playing live near you
+    // data-reason="12"  Free from Google
+    suggested_album : 'div[data-reason="7"]',
+    suggested_artist : 'div[data-is-radio][data-type="artist"]',
+    suggested_genre : 'div[data-type="expgenres"]',
     free_from_google : 'div[data-reason="12"]',
     small_card_group : 'div.card-group.small:first',
     card_group : 'div.card-group',
@@ -35,7 +40,8 @@ var str = {
     listen_now : '.nav-item-container[data-type="now"]',
     loading_screen : '#loading-progress',
     settings_view : '.settings-view',
-    footer : '#settings-footer'
+    footer : '#settings-footer',
+    keep_false : '[keep="false"]'
 };
 
 // one generic listener for all checkboxes. every interaction stores the setting.
@@ -95,33 +101,16 @@ var remove_mixes = function(){
         $(str.card).removeClass('large').addClass('small');
 
         // remove those items the user has unchecked
-        if(prefs.show_albums == false){
-            $(str.album).remove();
-        }
-        if(prefs.show_playlists == false){
-            $(str.playlist).remove();
-        }
-        if(prefs.show_instant_mixes_user == false){
-            $(str.instant_mix_user).remove();
-        }
-        if(prefs.show_instant_mixes_auto == false){
-            $(str.instant_mix_auto).remove();
-        }
-        if(prefs.show_im_feeling_lucky == false){
-            $(str.im_feeling_lucky).remove();
-        }
-        if(prefs.show_suggested_albums == false){
-            $(str.suggested_album).remove();
-        }
-        if(prefs.show_suggested_artists == false){
-            $(str.suggested_artist).remove();
-        }
-        if(prefs.show_free_from_google == false){
-            $(str.free_from_google).remove();
-        }
-        if(prefs.show_suggested_genres == false){
-            $(str.suggested_genre).remove();
-        }
+        $(str.album).attr('keep', prefs.show_albums.toString());
+        $(str.playlist).attr('keep', prefs.show_playlists.toString());
+        $(str.instant_mix_user).attr('keep', prefs.show_instant_mixes_user.toString());
+        $(str.instant_mix_auto).attr('keep', prefs.show_instant_mixes_auto.toString());
+        $(str.im_feeling_lucky).attr('keep', prefs.show_im_feeling_lucky.toString());
+        $(str.suggested_album).attr('keep', prefs.show_suggested_albums.toString());
+        $(str.suggested_artist).attr('keep', prefs.show_suggested_artists.toString());
+        $(str.suggested_genre).attr('keep', prefs.show_suggested_genres.toString());
+        $(str.free_from_google).attr('keep', prefs.show_free_from_google.toString());
+        $(str.keep_false).remove();
 
         // backup all the cards
         var cards = $(str.card).toArray();
