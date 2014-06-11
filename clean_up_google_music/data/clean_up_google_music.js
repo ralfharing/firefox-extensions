@@ -1,5 +1,5 @@
 /**
- * @author Ralf Haring 2014-05-29
+ * @author Ralf Haring 2014-06-10
  */
 
 var prefs = {};
@@ -34,7 +34,7 @@ var str = {
     suggested_artist : 'div[data-is-radio][data-type="artist"]',
     suggested_genre : 'div[data-type="expgenres"]',
     free_from_google : 'div[data-reason="12"]',
-    small_card_group : 'div.card-group.small:first',
+    small_card_group : 'div.card-group[data-size="small"]:first',
     card_group : 'div.card-group',
     content_pane : 'div.g-content:last-child',
     listen_now : '.nav-item-container[data-type="now"]',
@@ -98,7 +98,7 @@ var remove_mixes = function(){
     if((this == observer && $(str.listen_now).hasClass('selected')) ||
        (this == loading_observer && $(str.loading_screen).hasClass('fadeout'))){
         // change all large cards to small
-        $(str.card).removeClass('large').addClass('small');
+        $(str.card).attr('data-size', 'small');
 
         // remove those items the user has unchecked
         $(str.album).attr('keep', prefs.show_albums.toString());
@@ -136,7 +136,7 @@ var remove_mixes = function(){
                 var card2 = $(cards.shift()).css('height', '160px');
                 $(imfl_group).css('height', '255px').append(imfl_card).append(card1).append(card2).appendTo(str.content_pane);
             }else{
-                $(card1).removeClass('small').addClass('large');
+                $(card1).attr('data-size', 'large');
                 $(imfl_group).append(imfl_card).append(card1).appendTo(str.content_pane);
             }
         }else{
@@ -159,8 +159,8 @@ var remove_mixes = function(){
                 if(cards.length == 0) break;
                 var card_group = card_groups.shift();
                 var card1 = cards.shift();
-                if($(card_group).hasClass('large')){
-                    $(card1).removeClass('small').addClass('large');
+                if($(card_group).attr('data-size') == 'large'){
+                    $(card1).attr('data-size', 'large');
                     $(card_group).append(card1).appendTo(str.content_pane);
                 }else{
                     var card2 = cards.shift();
