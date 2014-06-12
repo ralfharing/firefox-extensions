@@ -1,5 +1,5 @@
 /**
- * @author Ralf Haring 2014-06-10
+ * @author Ralf Haring 2014-06-11
  */
 
 var prefs = {};
@@ -93,10 +93,40 @@ var add_listeners = function(){
 };
 
 // does the work
-var remove_mixes = function(){
-    // only proceed if in the Listen Now tab or if initial loading has just finished
-    if((this == observer && $(str.listen_now).hasClass('selected')) ||
-       (this == loading_observer && $(str.loading_screen).hasClass('fadeout'))){
+var remove_mixes = function(mutations){
+    // after the loading screen finishes, the structure is there for the other
+    // observers to attach to
+    if(this == loading_observer){
+        // outer container for the content pane, for monitoring if the settings
+        // page is displayed
+        var album_pane = $('#main')[0];
+        if(album_pane){
+            settings_observer.observe(album_pane, {childList : true});
+        }
+        // inner container for the content pane, for monitoring if the album
+        // cards are reinserted or otherwise refreshed
+        var album_inner_pane = $('.g-content')[0];
+        if(album_inner_pane){
+            refresh_observer.observe(album_inner_pane, {childList : true});
+        }
+        //console.log('loading');
+    }
+
+    // for debugging
+    //if(this == refresh_observer && mutations[0].addedNodes.length == 1 &&
+    //   mutations[0].addedNodes[0].className == 'cards' && $(str.card).length > 1){
+    //    console.log('refresh');
+    //}
+    //if(this == settings_observer && $(str.footer).length == 1){
+    //    console.log('settings');
+    //}
+
+    // modify the cards if the initial loading just finished or if the inner album
+    // content pane was modified, the pane of cards was reinserted, and there is
+    // more than one card
+    if(this == loading_observer ||
+       (this == refresh_observer && mutations[0].addedNodes.length == 1 &&
+        mutations[0].addedNodes[0].className == 'cards' && $(str.card).length > 1)){
         // change all large cards to small
         $(str.card).attr('data-size', 'small');
 
@@ -168,7 +198,7 @@ var remove_mixes = function(){
                 }
             }
         }
-    }else if(this == observer && $(str.footer).length == 1){
+    }else if(this == settings_observer && $(str.footer).length == 1){
         // if the settings page is opened, insert clean up settings
         // between the two "General" and "Manage My Devices" sections
 
@@ -220,14 +250,8 @@ var remove_mixes = function(){
     }
 };
 
-// container for all albums, instant mixes, and playlists
-var album_pane = $('#main')[0];
-// create an observer to delete the instant mixes
-// watch for new children to be added
-var observer = new MutationObserver(remove_mixes);
-if(album_pane){
-    observer.observe(album_pane, {childList : true});
-}
+var settings_observer = new WebKitMutationObserver(remove_mixes);
+var refresh_observer = new WebKitMutationObserver(remove_mixes);
 
 // loading progress bar
 var loading_screen = $(str.loading_screen)[0];
@@ -235,5 +259,5 @@ var loading_screen = $(str.loading_screen)[0];
 // watch for page to finish loading
 var loading_observer = new MutationObserver(remove_mixes);
 if(loading_screen){
-    loading_observer.observe(loading_screen, {attributes : true, attributeFilter : ['class']});
+    loading_observer.observe(loading_screen, {attributes : true, attributeFilter : ['style']});
 }
