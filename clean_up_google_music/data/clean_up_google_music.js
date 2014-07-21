@@ -1,5 +1,5 @@
 /**
- * @author Ralf Haring 2014-06-17
+ * @author Ralf Haring 2014-07-20
  */
 
 var prefs = {};
@@ -257,7 +257,7 @@ var refresh_observer = new MutationObserver(remove_mixes);
 var loading_observer = new MutationObserver(remove_mixes);
 
 // use jquery's load bind method. others trigger too early, before the loading screen appears.
-$(window).load(function(){
+$(document).ready(function(){
     // loading progress bar
     var loading_screen = $(str.loading_screen)[0];
     if(loading_screen){
