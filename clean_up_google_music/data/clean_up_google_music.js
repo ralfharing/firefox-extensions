@@ -101,7 +101,7 @@ var remove_mixes = function(mutations){
         // page is displayed
         var album_pane = $('#main')[0];
         if(album_pane){
-            settings_observer.observe(album_pane, {childList : true});
+            settings_observer.observe(album_pane, {childList : true, subtree : true});
         }
         // inner container for the content pane, for monitoring if the album
         // cards are reinserted or otherwise refreshed
@@ -198,7 +198,7 @@ var remove_mixes = function(mutations){
                 }
             }
         }
-    }else if(this == settings_observer && $(str.footer).length == 1){
+    }else if(this == settings_observer && $(str.footer).length == 1 && $('#clean-up').length == 0){
         // if the settings page is opened, insert clean up settings
         // between the two "General" and "Manage My Devices" sections
 
