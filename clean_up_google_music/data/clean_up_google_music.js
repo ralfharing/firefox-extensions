@@ -1,5 +1,5 @@
 /**
- * @author Ralf Haring 2014-07-20
+ * @author Ralf Haring 2014-09-19
  */
 
 var prefs = {};
@@ -25,12 +25,12 @@ var str = {
     // data-reason="5"   Recently created
     // data-reason="6"   Recently modified
     // data-reason="7"   Suggested new release
-    // data-reason="8"   ? Recommended for you
-    // data-reason="9"   ? ""
+    // data-reason="8"   Recommended for you
+    // data-reason="9"   Recommended album
     // data-reason="10"  Identified on Sound Search
     // data-reason="11"  Artist playing live near you
     // data-reason="12"  Free from Google
-    suggested_album : 'div[data-reason="7"]',
+    suggested_album : 'div[data-reason="9"]',
     suggested_artist : 'div[data-is-radio][data-type="artist"]',
     suggested_genre : 'div[data-type="expgenres"]',
     free_from_google : 'div[data-reason="12"]',
