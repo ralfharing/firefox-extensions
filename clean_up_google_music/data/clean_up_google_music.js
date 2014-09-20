@@ -1,5 +1,5 @@
 /**
- * @author Ralf Haring 2014-09-19
+ * @author Ralf Haring 2014-09-20
  */
 
 var prefs = {};
@@ -9,8 +9,8 @@ self.port.on('firefox_change_prefs', function(new_prefs){
     prefs = new_prefs;
 });
 
-// all the constants in one place
-var str = {
+// all the selectors in one place
+var selector = {
     card : 'div.card',
     album : 'div[data-type="album"]',
     playlist : 'div[data-type="pl"]',
@@ -37,16 +37,20 @@ var str = {
     small_card_group : 'div.card-group[data-size="small"]:first',
     card_group : 'div.card-group',
     content_pane : 'div.g-content:last-child',
-    listen_now : '.nav-item-container[data-type="now"]',
+    listen_now : '#nav_collections > [data-type="now"]',
     loading_screen : '#loading-progress',
     settings_view : '.settings-view',
     footer : '#settings-footer',
-    keep_false : '[keep="false"]'
+    keep_false : '[keep="false"]',
+    album_pane : '#main',
+    album_inner_pane : '.g-content',
+    clean_up_section : '#clean-up',
+    clean_up_checkboxes : '#clean-up :checkbox'
 };
 
 // one generic listener for all checkboxes. every interaction stores the setting.
 var add_listeners = function(){
-    $('#clean-up :checkbox').change(function(){
+    $(selector.clean_up_checkboxes).change(function(){
         switch(this.id){
             case 'show_albums':
                 prefs.show_albums = this.checked;
@@ -99,13 +103,13 @@ var remove_mixes = function(mutations){
     if(this == loading_observer){
         // outer container for the content pane, for monitoring if the settings
         // page is displayed
-        var album_pane = $('#main')[0];
+        var album_pane = $(selector.album_pane)[0];
         if(album_pane){
             settings_observer.observe(album_pane, {childList : true, subtree : true});
         }
         // inner container for the content pane, for monitoring if the album
         // cards are reinserted or otherwise refreshed
-        var album_inner_pane = $('.g-content')[0];
+        var album_inner_pane = $(selector.album_inner_pane)[0];
         if(album_inner_pane){
             refresh_observer.observe(album_inner_pane, {childList : true});
         }
@@ -114,10 +118,10 @@ var remove_mixes = function(mutations){
 
     // for debugging
     //if(this == refresh_observer && mutations[0].addedNodes.length == 1 &&
-    //   mutations[0].addedNodes[0].className == 'cards' && $(str.card).length > 1){
+    //   mutations[0].addedNodes[0].className == 'cards' && $(selector.card).length > 1){
     //    console.log('refresh');
     //}
-    //if(this == settings_observer && $(str.footer).length == 1){
+    //if(this == settings_observer && $(selector.footer).length == 1){
     //    console.log('settings');
     //}
 
@@ -126,31 +130,32 @@ var remove_mixes = function(mutations){
     // more than one card
     if(this == loading_observer ||
        (this == refresh_observer && mutations[0].addedNodes.length == 1 &&
-        mutations[0].addedNodes[0].className == 'cards' && $(str.card).length > 1)){
+        mutations[0].addedNodes[0].className == 'cards' && $(selector.card).length > 1 &&
+        $(selector.listen_now).hasClass('selected'))){
         // change all large cards to small
-        $(str.card).attr('data-size', 'small');
+        $(selector.card).attr('data-size', 'small');
 
         // remove those items the user has unchecked
-        $(str.album).attr('keep', prefs.show_albums.toString());
-        $(str.playlist).attr('keep', prefs.show_playlists.toString());
-        $(str.instant_mix_user).attr('keep', prefs.show_instant_mixes_user.toString());
-        $(str.instant_mix_auto).attr('keep', prefs.show_instant_mixes_auto.toString());
-        $(str.im_feeling_lucky).attr('keep', prefs.show_im_feeling_lucky.toString());
-        $(str.suggested_album).attr('keep', prefs.show_suggested_albums.toString());
-        $(str.suggested_artist).attr('keep', prefs.show_suggested_artists.toString());
-        $(str.suggested_genre).attr('keep', prefs.show_suggested_genres.toString());
-        $(str.free_from_google).attr('keep', prefs.show_free_from_google.toString());
-        $(str.keep_false).remove();
+        $(selector.album).attr('keep', prefs.show_albums.toString());
+        $(selector.playlist).attr('keep', prefs.show_playlists.toString());
+        $(selector.instant_mix_user).attr('keep', prefs.show_instant_mixes_user.toString());
+        $(selector.instant_mix_auto).attr('keep', prefs.show_instant_mixes_auto.toString());
+        $(selector.im_feeling_lucky).attr('keep', prefs.show_im_feeling_lucky.toString());
+        $(selector.suggested_album).attr('keep', prefs.show_suggested_albums.toString());
+        $(selector.suggested_artist).attr('keep', prefs.show_suggested_artists.toString());
+        $(selector.suggested_genre).attr('keep', prefs.show_suggested_genres.toString());
+        $(selector.free_from_google).attr('keep', prefs.show_free_from_google.toString());
+        $(selector.keep_false).remove();
 
         // backup all the cards
-        var cards = $(str.card).toArray();
+        var cards = $(selector.card).toArray();
         // backup a small empty container and change dimensions to hold one album each
-        var small_card_group = $(str.small_card_group).clone();
+        var small_card_group = $(selector.small_card_group).clone();
         $(small_card_group).empty().css('height', '255px');
         // backup clean copies of all existing containers
-        var card_groups = $(str.card_group).empty().toArray();
+        var card_groups = $(selector.card_group).empty().toArray();
         // flush everything that exists
-        $(str.content_pane).empty();
+        $(selector.content_pane).empty();
 
         // deal with the I'm Feeling Lucky container as a one-off first
         if(prefs.show_im_feeling_lucky == true){
@@ -164,10 +169,10 @@ var remove_mixes = function(mutations){
             if(prefs.resize_cards == true){
                 $(card1).css('height', '160px');
                 var card2 = $(cards.shift()).css('height', '160px');
-                $(imfl_group).css('height', '255px').append(imfl_card).append(card1).append(card2).appendTo(str.content_pane);
+                $(imfl_group).css('height', '255px').append(imfl_card).append(card1).append(card2).appendTo(selector.content_pane);
             }else{
                 $(card1).attr('data-size', 'large');
-                $(imfl_group).append(imfl_card).append(card1).appendTo(str.content_pane);
+                $(imfl_group).append(imfl_card).append(card1).appendTo(selector.content_pane);
             }
         }else{
             // chop off the ifl-group class for the case where we don't want to show it
@@ -181,7 +186,7 @@ var remove_mixes = function(mutations){
         // else, for each existing card group, pop off relevant cards and fix them, then append.
         if(prefs.resize_cards == true){
             while(cards.length > 0){
-                small_card_group.clone().append(cards.shift()).appendTo(str.content_pane);
+                small_card_group.clone().append(cards.shift()).appendTo(selector.content_pane);
             }
         }else{
             while(card_groups.length > 0){
@@ -191,14 +196,14 @@ var remove_mixes = function(mutations){
                 var card1 = cards.shift();
                 if($(card_group).attr('data-size') == 'large'){
                     $(card1).attr('data-size', 'large');
-                    $(card_group).append(card1).appendTo(str.content_pane);
+                    $(card_group).append(card1).appendTo(selector.content_pane);
                 }else{
                     var card2 = cards.shift();
-                    $(card_group).append(card1).append(card2).appendTo(str.content_pane);
+                    $(card_group).append(card1).append(card2).appendTo(selector.content_pane);
                 }
             }
         }
-    }else if(this == settings_observer && $(str.footer).length == 1 && $('#clean-up').length == 0){
+    }else if(this == settings_observer && $(selector.footer).length == 1 && $(selector.clean_up_section).length == 0){
         // if the settings page is opened, insert clean up settings
         // between the two "General" and "Manage My Devices" sections
 
@@ -241,7 +246,7 @@ var remove_mixes = function(mutations){
                         .append([first_row, second_row, third_row]));
 
         // find "General" div and insert after
-        var first_settings_section = $($(str.settings_view).children()[1]);
+        var first_settings_section = $($(selector.settings_view).children()[1]);
         first_settings_section.after(boxes).after(header);
 
         // sleep for one second to make sure the nodes are properly there.
@@ -259,7 +264,7 @@ var loading_observer = new MutationObserver(remove_mixes);
 // use jquery's load bind method. others trigger too early, before the loading screen appears.
 $(document).ready(function(){
     // loading progress bar
-    var loading_screen = $(str.loading_screen)[0];
+    var loading_screen = $(selector.loading_screen)[0];
     if(loading_screen){
         loading_observer.observe(loading_screen, {attributes : true, attributeFilter : ['style']});
     }
