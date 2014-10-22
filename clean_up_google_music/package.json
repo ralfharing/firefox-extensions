@@ -4,7 +4,7 @@
   "id": "jid1-JPoAYi8TbF26hg",
   "description": "Google Music includes auto-generated Instant Mix/Radio Station playlists that cannot be removed.",
   "author": "Ralf Haring",
-  "version": "1.4.9",
+  "version": "1.5",
   "preferences": [{
         "name": "show_albums",
         "type": "bool",
@@ -58,6 +58,12 @@
         "type": "bool",
         "title": "Show Free from Google",
         "value": true
+    },
+    {
+        "name": "show_situations",
+        "type": "bool",
+        "title": "Show Situations",
+        "value": false
     },
     {
         "name": "resize_cards",

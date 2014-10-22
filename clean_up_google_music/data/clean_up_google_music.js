@@ -1,5 +1,5 @@
 /**
- * @author Ralf Haring 2014-09-21
+ * @author Ralf Haring 2014-10-21
  */
 
 var prefs = {};
@@ -34,6 +34,8 @@ var selector = {
     suggested_artist : 'div[data-is-radio][data-type="artist"]',
     suggested_genre : 'div[data-type="expgenres"]',
     free_from_google : 'div[data-reason="12"]',
+    situations : 'div[data-type="situations"]',
+    explore : 'div[data-type="exptop"]',
     small_card_group : 'div.card-group[data-size="small"]:first',
     card_group : 'div.card-group',
     content_pane : 'div.g-content:last-child',
@@ -45,7 +47,8 @@ var selector = {
     album_pane : '#main',
     album_inner_pane : '.g-content',
     clean_up_section : '#clean-up',
-    clean_up_checkboxes : '#clean-up :checkbox'
+    clean_up_checkboxes : '#clean-up :checkbox',
+    all_access : '#music-banner-subtitle'
 };
 
 // one generic listener for all checkboxes. every interaction stores the setting.
@@ -88,6 +91,10 @@ var add_listeners = function(){
                 prefs.show_free_from_google = this.checked;
                 self.port.emit('gmusic_change_prefs', {'show_free_from_google' : this.checked});
                 break;
+            case 'show_situations':
+                prefs.show_situations = this.checked;
+                self.port.emit('gmusic_change_prefs', {'show_situations' : this.checked});
+                break;
             case 'resize_cards':
                 prefs.resize_cards = this.checked;
                 self.port.emit('gmusic_change_prefs', {'resize_cards' : this.checked});
@@ -104,20 +111,45 @@ var filter_cards = function(mutations){
     //    console.log('refresh');
     //}
 
-    // bump out when the page refreshes and any of the following aren't true:
-    // - exactly one new card was added
-    // - there is more than one existing card
-    // - the listen now page is the one being displayed
-    // if all of those *are* true or if the initial loading screen observer
-    // was the one calling this handler, proceed to filtering the cards
-    if(this == refresh_observer && !(mutations[0].addedNodes.length == 1 &&
-        mutations[0].addedNodes[0].className == 'cards' && $(selector.card).length > 1 &&
-        $(selector.listen_now).hasClass('selected'))){
-        return;
+    // the all access Listen Now page is structured differently
+    var is_all_access = $(selector.all_access).text() == 'All Access';
+
+    if(this == refresh_observer){
+        if(is_all_access == true && !(mutations[0].addedNodes.length == 4 &&
+           mutations[0].addedNodes[0].className == 'situations-container' &&
+           $(selector.listen_now).hasClass('selected'))){
+            // bump out when the page refreshes, all access is enabled,
+            // and any of the following aren't true:
+            // - the four situation rows are what was refreshed
+            // - the listen now page is the one being displayed
+            // if all of those *are* true or if the initial loading screen observer
+            // was the one calling this handler, proceed to filtering the cards
+            return;
+        }else if(is_all_access == false && !(mutations[0].addedNodes.length == 1 &&
+                 mutations[0].addedNodes[0].className == 'cards' && $(selector.card).length > 1 &&
+                 $(selector.listen_now).hasClass('selected'))){
+            // bump out when the page refreshes, all access is not enabled,
+            // and any of the following aren't true:
+            // - exactly one new card was added
+            // - there is more than one existing card
+            // - the listen now page is the one being displayed
+            // if all of those *are* true or if the initial loading screen observer
+            // was the one calling this handler, proceed to filtering the cards
+            return;
+        }
     }
 
     // change all large cards to small
     $(selector.card).attr('data-size', 'small');
+
+    // the suggestions and lucky cards are shaped completely differently in All Access
+    // and won't fit into the standard grid
+    if(is_all_access == true){
+        self.port.emit('gmusic_change_prefs', {'show_im_feeling_lucky' : false});
+        self.port.emit('gmusic_change_prefs', {'show_suggested_albums' : false});
+        self.port.emit('gmusic_change_prefs', {'show_suggested_artists' : false});
+        self.port.emit('gmusic_change_prefs', {'show_suggested_genres' : false});
+    }
 
     // remove those items the user has unchecked
     $(selector.album).attr('keep', prefs.show_albums.toString());
@@ -129,14 +161,21 @@ var filter_cards = function(mutations){
     $(selector.suggested_artist).attr('keep', prefs.show_suggested_artists.toString());
     $(selector.suggested_genre).attr('keep', prefs.show_suggested_genres.toString());
     $(selector.free_from_google).attr('keep', prefs.show_free_from_google.toString());
+    $(selector.situations).attr('keep', prefs.show_situations.toString());
+    // the explore card will always be false and always removed
+    $(selector.explore).attr('keep', 'false');
     $(selector.keep_false).remove();
 
     // backup all the cards
     var cards = $(selector.card).toArray();
     // backup a small empty container and change dimensions to hold one album each
     var small_card_group = $(selector.small_card_group).clone();
+    // the all access screen doesn't have any card groups so create one
+    if(is_all_access){
+        small_card_group = $('<div>', {'class': 'card-group', 'data-size' : 'small'});
+    }
     $(small_card_group).empty().css('height', '255px');
-    // backup clean copies of all existing containers
+    // backup clean copies of all existing containers (empty for all access)
     var card_groups = $(selector.card_group).empty().toArray();
     // flush everything that exists
     $(selector.content_pane).empty();
@@ -168,7 +207,7 @@ var filter_cards = function(mutations){
     // loop through different arrays depending on whether cards should be smallified.
     // if yes, for each card wrap a small card group around it and append.
     // else, for each existing card group, pop off relevant cards and fix them, then append.
-    if(prefs.resize_cards == true){
+    if(prefs.resize_cards == true || is_all_access == true){
         while(cards.length > 0){
             small_card_group.clone().append(cards.shift()).appendTo(selector.content_pane);
         }
@@ -244,7 +283,9 @@ var show_settings = function(){
                            .add($('<input>', {id: 'show_suggested_genres', type: 'checkbox', checked: prefs.show_suggested_genres}))
                            .add($('<label>', {'for': 'show_suggested_genres', text: 'Suggested Genres'}))
                            .add($('<input>', {id: 'show_free_from_google', type: 'checkbox', checked: prefs.show_free_from_google}))
-                           .add($('<label>', {'for': 'show_free_from_google', text: 'Free from Google'})));
+                           .add($('<label>', {'for': 'show_free_from_google', text: 'Free from Google'}))
+                           .add($('<input>', {id: 'show_situations', type: 'checkbox', checked: prefs.show_situations}))
+                           .add($('<label>', {'for': 'show_situations', text: 'Situations'})));
         // create [<span></span>, <div><input><label></label></div>]
         var third_row = $('<span>', {'class': 'settings-button-description', text: 'Check off to force all cards to the uniform small size'})
                           .add($('<div>').append($('<input>', {id: 'resize_cards', type: 'checkbox', checked: prefs.resize_cards})
